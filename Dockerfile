@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o /app/server ./src
+RUN go build -o /app/server .
 
 FROM --platform=linux/amd64 ubuntu:22.04 AS runner
 
