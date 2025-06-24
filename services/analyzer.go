@@ -26,14 +26,14 @@ func (s *WebAnalysisService) AnalyseWebPage(ctx context.Context, targetUrl strin
 
 	handler := func(p *rodAnalyzer.ExtendedPage) error {
 		result.HTMLVersion = p.HTMLVersion()
-		result.PageTitle = p.MustInfo().Title
-		result.HeadingCounts.H1 = p.ElementCount("h1")
-		result.HeadingCounts.H2 = p.ElementCount("h2")
-		result.HeadingCounts.H3 = p.ElementCount("h3")
-		result.HeadingCounts.H4 = p.ElementCount("h4")
-		result.HeadingCounts.H5 = p.ElementCount("h5")
-		result.HeadingCounts.H6 = p.ElementCount("h6")
-		result.ContainsLoginForm = p.ContainsLoginForm()
+		result.Title = p.MustInfo().Title
+		result.Headings.H1 = p.ElementCount("h1")
+		result.Headings.H2 = p.ElementCount("h2")
+		result.Headings.H3 = p.ElementCount("h3")
+		result.Headings.H4 = p.ElementCount("h4")
+		result.Headings.H5 = p.ElementCount("h5")
+		result.Headings.H6 = p.ElementCount("h6")
+		result.LoginForm = p.ContainsLoginForm()
 
 		analyzeLinks := func(pp rod.Pool[rod.Page]) {
 			baseURL := lo.FromPtr(ok(url.Parse(p.MustInfo().URL)))
@@ -46,9 +46,9 @@ func (s *WebAnalysisService) AnalyseWebPage(ctx context.Context, targetUrl strin
 					defer wg.Done()
 					href := ok(el.Property("href")).String()
 					if isExternal(href, &baseURL) {
-						result.ExternalLinkCount++
+						result.ExternalLinks++
 					} else {
-						result.InternalLinkCount++
+						result.InternalLinks++
 					}
 				}(a)
 			}

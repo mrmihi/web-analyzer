@@ -7,16 +7,16 @@ type AnalyzeWebsiteReq struct {
 }
 
 type AnalyzeWebsiteRes struct {
-	HTMLVersion           string        `json:"html_version"`
-	PageTitle             string        `json:"page_title"`
-	HeadingCounts         HeadingCounts `json:"heading_counts"`
-	InternalLinkCount     int           `json:"internal_link_count"`
-	ExternalLinkCount     int           `json:"external_link_count"`
-	InaccessibleLinkCount int           `json:"inaccessible_link_count"`
-	ContainsLoginForm     bool          `json:"contains_login_form"`
+	HTMLVersion       string   `json:"html_version"`
+	Title             string   `json:"title"`
+	Headings          Headings `json:"headings"`
+	InternalLinks     int      `json:"internal_links"`
+	ExternalLinks     int      `json:"external_links"`
+	InaccessibleLinks int      `json:"inaccessible_links"`
+	LoginForm         bool     `json:"login_form"`
 }
 
-type HeadingCounts struct {
+type Headings struct {
 	H1 int `json:"h1"`
 	H2 int `json:"h2"`
 	H3 int `json:"h3"`

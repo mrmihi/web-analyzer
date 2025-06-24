@@ -9,7 +9,7 @@ import (
 var metricsHandler = promhttp.Handler()
 
 func AddAnalyzerRoutes(group *gin.RouterGroup) {
-	group.POST("/", handlers.AnalyzerHandler)
+	group.POST("/analyze", handlers.AnalyzerHandler)
 }
 
 func AddMetricsRoutes(group *gin.RouterGroup) {
