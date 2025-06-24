@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"scraper/dto"
 	"scraper/internal/logger"
+	"scraper/internal/scraper"
 	"scraper/services"
 	"time"
 
@@ -15,6 +16,20 @@ import (
 // AnalyzerHandler handles requests to the root path ("/")
 func AnalyzerHandler(c *gin.Context) {
 	ctx := context.Background()
+
+	analyzer, err := rodAnalyzer.NewRodAnalyzer()
+	if err != nil {
+		logger.ErrorCtx(context.Background(), "Failed to create analyzer", logger.Field{Key: "error", Value: err})
+		return
+	}
+	defer func(analyzer *rodAnalyzer.RodAnalyzer) {
+		err := analyzer.Close()
+		if err != nil {
+			logger.ErrorCtx(ctx, "Failed to close analyzer", logger.Field{Key: "error", Value: err})
+		}
+	}(analyzer)
+
+	analysisService := services.NewWebAnalysisService(analyzer)
 
 	var request dto.AnalyzeWebsiteReq
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -43,7 +58,7 @@ func AnalyzerHandler(c *gin.Context) {
 			}
 		}()
 
-		result := services.AnalyseWebPage(request.URL)
+		result, _ := analysisService.AnalyseWebPage(context.Background(), request.URL)
 		done <- result
 	}()
 

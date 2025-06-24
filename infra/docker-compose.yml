@@ -1,0 +1,36 @@
+services:
+  server:
+    build:
+      context: ..
+    container_name: scraper-server
+    ports:
+      - "8080:8080"
+    labels:
+      loggable: "true"
+      service: "scraper-service"
+    networks:
+      - app-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "{{.Name}}"
+
+  client:
+    image: mrmihi0/scraper-client:latest
+    container_name: scraper-client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  grafana-storage:
+  jaeger-storage:
