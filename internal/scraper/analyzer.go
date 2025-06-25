@@ -30,8 +30,8 @@ type RodAnalyzer struct {
 	Browser *rod.Browser
 }
 
-// NewRodAnalyzer creates and configures a new rod-based analyzer.
-func NewRodAnalyzer() (*RodAnalyzer, error) {
+// New creates and configures a new rod-based analyzer.
+func New() (*RodAnalyzer, error) {
 	var l *launcher.Launcher
 	if config.Config.ChromeSetup != "" {
 		l = launcher.New().Bin(config.Config.ChromeSetup)
@@ -64,7 +64,7 @@ func NewRodAnalyzer() (*RodAnalyzer, error) {
 	return &RodAnalyzer{Browser: browser}, nil
 }
 
-// Analyze now contains ALL the logic for scraping and analyzing the page.
+// Analyze fetches and analyzes the webpage at the given URL, returning the analysis results.
 func (r *RodAnalyzer) Analyze(ctx context.Context, targetUrl string) (dto.AnalyzeWebsiteRes, error) {
 	logger.InfoCtx(ctx, "Visiting page", logger.Field{Key: "url", Value: targetUrl})
 

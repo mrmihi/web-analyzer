@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"scraper/cmd"
 	"scraper/config"
+	"scraper/handlers"
 	"scraper/internal/logger"
 	"scraper/internal/scraper"
 	"scraper/services"
@@ -29,14 +30,16 @@ func New() (*App, func()) {
 
 	appConfig := config.GetConfig()
 
-	analyzer, err := rodAnalyzer.NewRodAnalyzer()
+	analyzer, err := rodAnalyzer.New()
 	if err != nil {
 		log.Fatalf("FATAL: Failed to create rod analyzer: %s\n", err)
 	}
 
 	analysisService := services.NewWebAnalysisService(analyzer)
 
-	server := cmd.NewServer()
+	analysisController := handlers.NewAnalysisController(analysisService)
+
+	server := cmd.NewServer(analysisController)
 
 	app := &App{
 		Config:          appConfig,

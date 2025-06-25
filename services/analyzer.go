@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"scraper/dto"
-	rodAnalyzer "scraper/internal/scraper"
+	"scraper/internal/scraper"
 )
 
 // WebAnalysisService contains the business logic for analyzing a webpage.

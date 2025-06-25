@@ -26,7 +26,7 @@ func main() {
 	defer cleanup()
 
 	go func() {
-		logger.InfoCtx(ctx, fmt.Sprintf("Starting server on port %d", config.Config.Port))
+		logger.InfoCtx(ctx, fmt.Sprintf("Starting server on port %s", config.Config.Port))
 
 		err := service.Server.ListenAndServe()
 
