@@ -7,31 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os/signal"
+	"scraper/cmd/app"
 	"scraper/config"
-	"scraper/consts"
 	"scraper/internal/logger"
-	"scraper/routes"
 	"syscall"
 	"time"
 )
-
-type Service struct {
-	Name   string
-	Server *http.Server
-	Logger logger.Logger
-	Config *config.Config
-}
-
-func NewService(serviceName string) *Service {
-	zapLogger := logger.NewZapLogger(true)
-	logger.SetLogger(zapLogger)
-	return &Service{
-		Name:   serviceName,
-		Server: routes.NewServer(),
-		Logger: logger.GetLogger(),
-		Config: config.GetConfig(),
-	}
-}
 
 func main() {
 
@@ -40,10 +21,12 @@ func main() {
 
 	ctx := context.Background()
 
-	service := NewService(consts.ServiceName)
+	service, cleanup := app.New()
+
+	defer cleanup()
 
 	go func() {
-		logger.InfoCtx(ctx, fmt.Sprintf("Starting server on port %d", config.Env.Port))
+		logger.InfoCtx(ctx, fmt.Sprintf("Starting server on port %d", config.Config.Port))
 
 		err := service.Server.ListenAndServe()
 

@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-// TODO: Implement Prometheus metrics for HTTP requests
-
 var (
 	httpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{

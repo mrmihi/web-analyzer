@@ -6,9 +6,12 @@ import (
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/proto"
+	"net/url"
 	"scraper/common"
 	"scraper/config"
+	"scraper/dto"
 	"scraper/internal/logger"
+	"sync"
 )
 
 var (
@@ -16,10 +19,9 @@ var (
 	ErrTargetIsNotValidHTML = errors.New("target resource is not a valid HTML document")
 )
 
-// PageAnalyzer is an interface that defines the methods for analyzing web pages.
+// PageAnalyzer defines the interface for analyzing web pages.
 type PageAnalyzer interface {
-	Analyze(ctx context.Context, url string, handler func(p *ExtendedPage) error) error
-	GetBrowser() *rod.Browser
+	Analyze(ctx context.Context, url string) (dto.AnalyzeWebsiteRes, error)
 	Close() error
 }
 
@@ -31,8 +33,8 @@ type RodAnalyzer struct {
 // NewRodAnalyzer creates and configures a new rod-based analyzer.
 func NewRodAnalyzer() (*RodAnalyzer, error) {
 	var l *launcher.Launcher
-	if config.Env.ChromeSetup != "" {
-		l = launcher.New().Bin(config.Env.ChromeSetup)
+	if config.Config.ChromeSetup != "" {
+		l = launcher.New().Bin(config.Config.ChromeSetup)
 	} else {
 		path, exists := launcher.LookPath()
 		if !exists {
@@ -41,9 +43,10 @@ func NewRodAnalyzer() (*RodAnalyzer, error) {
 		l = launcher.New().Bin(path)
 	}
 
-	u := l.Headless(true).NoSandbox(true).MustLaunch()
+	u := l.Headless(false).NoSandbox(true).MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 
+	// Intercept and block requests for images, css, fonts, etc. to speed up page loads.
 	router := browser.HijackRequests()
 	router.MustAdd("*", func(ctx *rod.Hijack) {
 		switch ctx.Request.Type() {
@@ -61,50 +64,85 @@ func NewRodAnalyzer() (*RodAnalyzer, error) {
 	return &RodAnalyzer{Browser: browser}, nil
 }
 
-// Analyze implements the PageAnalyzer interface. It encapsulates the session logic.
-func (r *RodAnalyzer) Analyze(ctx context.Context, url string, handler func(p *ExtendedPage) error) error {
-	logger.InfoCtx(ctx, "Visiting page", logger.Field{Key: "url", Value: url})
+// Analyze now contains ALL the logic for scraping and analyzing the page.
+func (r *RodAnalyzer) Analyze(ctx context.Context, targetUrl string) (dto.AnalyzeWebsiteRes, error) {
+	logger.InfoCtx(ctx, "Visiting page", logger.Field{Key: "url", Value: targetUrl})
 
+	var result dto.AnalyzeWebsiteRes
 	var e proto.NetworkResponseReceived
-	page := r.Browser.MustPage("")
-	defer func(page *rod.Page) {
-		err := page.Close()
-		if err != nil {
+
+	page := r.Browser.MustPage("").Context(ctx)
+	defer func() {
+		if err := page.Close(); err != nil {
 			logger.ErrorCtx(ctx, "Failed to close page", logger.Field{Key: "error", Value: err})
 		}
-	}(page)
-
-	page = page.Context(ctx)
+	}()
 
 	wait := page.WaitEvent(&e)
-	if err := page.Navigate(url); err != nil {
+	if err := page.Navigate(targetUrl); err != nil {
 		logger.ErrorCtx(ctx, "Failed to retrieve webpage", logger.Field{Key: "error", Value: err})
-		return ErrConnectionError
+		return result, ErrConnectionError
 	}
 	wait()
-
 	page.MustWaitLoad()
-
-	//contentType, ok := e.Response.Headers["Content-Type"]
-	//if !ok || !strings.Contains(contentType.String(), "text/html") {
-	//	logger.ErrorCtx(ctx, "Invalid content type", logger.Field{Key: "content-type", Value: contentType})
-	//	return ErrTargetIsNotValidHTML
-	//}
 
 	if e.Response.Status < 200 || e.Response.Status >= 300 {
 		logger.ErrorCtx(ctx, "Invalid response status", logger.Field{Key: "status", Value: e.Response.Status})
-		return common.NewGinError(422, "Failed to analyze webpage", e.Response.Status)
+		return result, common.NewGinError(422, "Failed to analyze webpage", e.Response.Status)
 	}
 
-	return handler(&ExtendedPage{page})
-}
+	extendedPage := &ExtendedPage{page}
 
-// GetBrowser provides access to the underlying browser for pool creation.
-func (r *RodAnalyzer) GetBrowser() *rod.Browser {
-	return r.Browser
+	result.HTMLVersion = extendedPage.HTMLVersion()
+	result.Title = extendedPage.MustInfo().Title
+	result.Headings.H1 = extendedPage.ElementCount("h1")
+	result.Headings.H2 = extendedPage.ElementCount("h2")
+	result.Headings.H3 = extendedPage.ElementCount("h3")
+	result.Headings.H4 = extendedPage.ElementCount("h4")
+	result.Headings.H5 = extendedPage.ElementCount("h5")
+	result.Headings.H6 = extendedPage.ElementCount("h6")
+	result.LoginForm = extendedPage.ContainsLoginForm()
+
+	baseURL, err := url.Parse(extendedPage.MustInfo().URL)
+	if err != nil {
+		logger.WarnCtx(ctx, "Could not parse base URL", logger.Field{Key: "error", Value: err})
+		return result, err
+	}
+
+	allLinkElements, err := extendedPage.Elements(`a[href]:not([href^="mailto:"]):not([href^="tel:"])`)
+	if err != nil {
+		logger.WarnCtx(ctx, "Could not get link elements", logger.Field{Key: "error", Value: err})
+		return result, err
+	}
+
+	var wg sync.WaitGroup
+	for _, a := range allLinkElements {
+		wg.Add(1)
+		go func(el *rod.Element) {
+			defer wg.Done()
+			href, _ := el.Property("href")
+			if isExternal(href.String(), baseURL) {
+				result.ExternalLinks++
+			} else {
+				result.InternalLinks++
+			}
+		}(a)
+	}
+	wg.Wait()
+
+	return result, nil
 }
 
 // Close cleans up the browser instance.
 func (r *RodAnalyzer) Close() error {
 	return r.Browser.Close()
+}
+
+// isExternal is a helper function to check if a link is external.
+func isExternal(link string, base *url.URL) bool {
+	linkURL, err := url.Parse(link)
+	if err != nil {
+		return false // Or handle as an inaccessible link
+	}
+	return linkURL.IsAbs() && linkURL.Hostname() != "" && linkURL.Hostname() != base.Hostname()
 }

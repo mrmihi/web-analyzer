@@ -1,7 +1,5 @@
 package dto
 
-// TODO: Refactor this file to use the global response structure
-
 type AnalyzeWebsiteReq struct {
 	URL string `json:"url" validate:"required,url" messages:"Please provide a valid url to analyse"`
 }
