@@ -6,8 +6,8 @@ import (
 	"scraper/handlers"
 )
 
-func AddAnalyzerRoutes(group *gin.RouterGroup) {
-	group.GET("/analyze", handlers.AnalyzerHandler)
+func AddAnalyzerRoutes(group *gin.RouterGroup, ac *handlers.AnalysisController) {
+	group.GET("/analyze", ac.Analyze)
 }
 
 func AddMetricsRoutes(group *gin.RouterGroup) {

@@ -6,35 +6,31 @@ import (
 	"net/http"
 	"scraper/dto"
 	"scraper/internal/logger"
-	"scraper/internal/scraper"
 	"scraper/services"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// AnalyzerHandler handles requests to the root path ("/")
-func AnalyzerHandler(c *gin.Context) {
-	ctx := context.Background()
+// AnalysisController holds the dependencies for the analysis handlers.
+type AnalysisController struct {
+	AnalysisService *services.WebAnalysisService
+}
 
-	analyzer, err := rodAnalyzer.NewRodAnalyzer()
-	if err != nil {
-		logger.ErrorCtx(context.Background(), "Failed to create analyzer", logger.Field{Key: "error", Value: err})
-		return
+// NewAnalysisController creates a new handler with its dependencies.
+func NewAnalysisController(service *services.WebAnalysisService) *AnalysisController {
+	return &AnalysisController{
+		AnalysisService: service,
 	}
-	defer func(analyzer *rodAnalyzer.RodAnalyzer) {
-		err := analyzer.Close()
-		if err != nil {
-			logger.ErrorCtx(ctx, "Failed to close analyzer", logger.Field{Key: "error", Value: err})
-		}
-	}(analyzer)
+}
 
-	analysisService := services.NewWebAnalysisService(analyzer)
-
+func (ac *AnalysisController) Analyze(c *gin.Context) {
+	ctx := c.Request.Context()
+	logger.InfoCtx(ctx, "Received request to analyze a webpage")
 	var request dto.AnalyzeWebsiteReq
 	if err := c.ShouldBindJSON(&request); err != nil {
 		logger.ErrorCtx(ctx, "Invalid request body", logger.Field{Key: "error", Value: err})
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body. Please provide a valid URL in the request body."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body. Please provide a valid URL."})
 		return
 	}
 
@@ -46,32 +42,14 @@ func AnalyzerHandler(c *gin.Context) {
 
 	logger.InfoCtx(ctx, "Analyzing webpage", logger.Field{Key: "url", Value: request.URL})
 
-	timer := time.NewTimer(120 * time.Second)
+	analysisCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
+	defer cancel()
 
-	done := make(chan dto.AnalyzeWebsiteRes, 1)
-	errChan := make(chan error, 1)
-
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				errChan <- fmt.Errorf("internal server error: %v", r)
-			}
-		}()
-
-		result, _ := analysisService.AnalyseWebPage(context.Background(), request.URL)
-		done <- result
-	}()
-
-	select {
-	case result := <-done:
-		timer.Stop()
-		c.JSON(http.StatusOK, result)
-	case err := <-errChan:
-		timer.Stop()
+	result, err := ac.AnalysisService.AnalyseWebPage(analysisCtx, request.URL)
+	if err != nil {
 		logger.ErrorCtx(ctx, "Analysis failed", logger.Field{Key: "url", Value: request.URL}, logger.Field{Key: "error", Value: err})
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	case <-timer.C:
-		logger.ErrorCtx(ctx, "Request timed out", logger.Field{Key: "url", Value: request.URL})
-		c.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out after 120 seconds. The analysis is taking longer than expected."})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to analyze the webpage: %v", err)})
+		return
 	}
+	c.JSON(http.StatusOK, result)
 }

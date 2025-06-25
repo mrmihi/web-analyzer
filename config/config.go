@@ -9,7 +9,7 @@ import (
 )
 
 type Cfg struct {
-	Port        int    `map:"PORT"`
+	Port        string `map:"PORT"`
 	Host        string `map:"HOST"`
 	ChromeSetup string `map:"CHROME_SETUP"`
 }
