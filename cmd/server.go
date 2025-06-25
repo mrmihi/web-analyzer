@@ -1,10 +1,11 @@
-package routes
+package cmd
 
 import (
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"net/http"
-	"scraper/consts"
+	api2 "scraper/api"
+	"scraper/common"
 	"scraper/middleware"
 	"time"
 )
@@ -13,18 +14,17 @@ import (
 func NewServer() *http.Server {
 	router := gin.Default()
 
-	router.Use(middleware.CORSMiddleware())
-	router.Use(otelgin.Middleware(consts.ServiceName))
+	router.Use(otelgin.Middleware(common.ServiceName))
 	router.Use(middleware.PrometheusMiddleware())
+	router.Use(middleware.CORSMiddleware())
 	router.Use(middleware.LeakBucket())
-	// TODO: gin-helmet installation issues
-	//router.Use(ginhelmet.Default())
+	router.Use(gin.Recovery())
 
 	api := router.Group("/api")
 	v1 := api.Group("/v1")
 
-	AddAnalyzerRoutes(v1)
-	AddMetricsRoutes(v1)
+	api2.AddAnalyzerRoutes(v1)
+	api2.AddMetricsRoutes(v1)
 
 	server := &http.Server{
 		Addr:         ":8080",

@@ -1,4 +1,4 @@
-package routes
+package api
 
 import (
 	"github.com/gin-gonic/gin"
@@ -6,12 +6,10 @@ import (
 	"scraper/handlers"
 )
 
-var metricsHandler = promhttp.Handler()
-
 func AddAnalyzerRoutes(group *gin.RouterGroup) {
-	group.POST("/", handlers.AnalyzerHandler)
+	group.GET("/analyze", handlers.AnalyzerHandler)
 }
 
 func AddMetricsRoutes(group *gin.RouterGroup) {
-	group.GET("/system/metrics", gin.WrapH(metricsHandler))
+	group.GET("/system/metrics", gin.WrapH(promhttp.Handler()))
 }

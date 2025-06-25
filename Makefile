@@ -1,6 +1,6 @@
 dev:
 	air
 sandbox:
-	docker compose -f ./infrastructure/docker-compose.yml up
+	docker compose -f ./infra/docker-compose.yml up
 teardown:
-	docker compose -f ./infrastructure/docker-compose.yml down
+	docker compose -f ./infra/docker-compose.yml down

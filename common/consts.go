@@ -1,3 +1,3 @@
-package consts
+package common
 
 var ServiceName = "scraper-service"
