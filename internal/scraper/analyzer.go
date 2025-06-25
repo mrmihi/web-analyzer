@@ -44,7 +44,7 @@ func New() (*RodAnalyzer, error) {
 		l = launcher.New().Bin(path)
 	}
 
-	u := l.Headless(false).NoSandbox(true).MustLaunch()
+	u := l.Headless(true).NoSandbox(true).MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 
 	router := browser.HijackRequests()
