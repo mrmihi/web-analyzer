@@ -30,7 +30,7 @@ func New() (*App, func()) {
 
 	appConfig := config.GetConfig()
 
-	analyzer, err := rodAnalyzer.NewRodAnalyzer()
+	analyzer, err := rodAnalyzer.New()
 	if err != nil {
 		log.Fatalf("FATAL: Failed to create rod analyzer: %s\n", err)
 	}

@@ -2,51 +2,53 @@ package config
 
 import (
 	"context"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
-	"reflect"
 	"scraper/internal/logger"
 )
 
 type Cfg struct {
-	Port        string `map:"PORT"`
-	Host        string `map:"HOST"`
-	ChromeSetup string `map:"CHROME_SETUP"`
+	Port        string `mapstructure:"PORT"`
+	Host        string `mapstructure:"HOST"`
+	ChromeSetup string `mapstructure:"CHROME_SETUP"`
 }
 
 var Config *Cfg
 
 func setDefaults() {
-	viper.SetDefault("PORT", 8080)
+	viper.SetDefault("PORT", "8080")
 	viper.SetDefault("HOST", "0.0.0.0")
 }
 
 func GetConfig() *Cfg {
 	ctx := context.Background()
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
 
-	if err := viper.ReadInConfig(); err != nil {
-		typ := reflect.TypeOf(Config).Elem()
-		for i := range typ.NumField() {
-			err := viper.BindEnv(typ.Field(i).Tag.Get("map"))
-			if err != nil {
-				logger.ErrorCtx(ctx, "Failed to bind environment variable", logger.Field{Key: "error", Value: err})
-				return nil
-			}
-		}
-	}
+	viper.AutomaticEnv()
+	bindEnvVariables()
 
 	setDefaults()
 
-	if err := viper.Unmarshal(&Config); err != nil {
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	_ = viper.ReadInConfig()
+
+	Config = &Cfg{}
+	if err := viper.Unmarshal(Config); err != nil {
 		logger.ErrorCtx(ctx, "Failed to unmarshal configuration", logger.Field{Key: "error", Value: err})
 		panic(err)
 	}
 
-	if errs := validator.New().Struct(Config); errs != nil {
-		logger.ErrorCtx(ctx, "Invalid environment configuration", logger.Field{Key: "error", Value: errs})
-		panic(errs)
+	if err := validator.New().Struct(Config); err != nil {
+		logger.ErrorCtx(ctx, "Invalid environment configuration", logger.Field{Key: "error", Value: err})
+		panic(err)
 	}
+
 	return Config
+}
+
+func bindEnvVariables() {
+	_ = viper.BindEnv("PORT")
+	_ = viper.BindEnv("HOST")
+	_ = viper.BindEnv("CHROME_SETUP")
 }
