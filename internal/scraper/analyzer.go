@@ -6,6 +6,8 @@ import (
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/proto"
+	"io"
+	"net/http"
 	"net/url"
 	"scraper/common"
 	"scraper/config"
@@ -15,8 +17,7 @@ import (
 )
 
 var (
-	ErrConnectionError      = errors.New("failed to connect to the webpage")
-	ErrTargetIsNotValidHTML = errors.New("target resource is not a valid HTML document")
+	ErrConnectionError = errors.New("failed to connect to the webpage")
 )
 
 // PageAnalyzer defines the interface for analyzing web pages.
@@ -46,14 +47,17 @@ func New() (*RodAnalyzer, error) {
 	u := l.Headless(false).NoSandbox(true).MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 
-	// Intercept and block requests for images, css, fonts, etc. to speed up page loads.
 	router := browser.HijackRequests()
 	router.MustAdd("*", func(ctx *rod.Hijack) {
 		switch ctx.Request.Type() {
 		case proto.NetworkResourceTypeImage,
 			proto.NetworkResourceTypeStylesheet,
 			proto.NetworkResourceTypeFont,
-			proto.NetworkResourceTypeMedia:
+			proto.NetworkResourceTypeMedia,
+			proto.NetworkResourceTypeTextTrack,
+			proto.NetworkResourceTypeManifest,
+			proto.NetworkResourceTypeEventSource,
+			proto.NetworkResourceTypeWebSocket:
 			ctx.Response.Fail(proto.NetworkErrorReasonBlockedByClient)
 		default:
 			ctx.ContinueRequest(&proto.FetchContinueRequest{})
@@ -121,7 +125,10 @@ func (r *RodAnalyzer) Analyze(ctx context.Context, targetUrl string) (dto.Analyz
 		go func(el *rod.Element) {
 			defer wg.Done()
 			href, _ := el.Property("href")
-			if isExternal(href.String(), baseURL) {
+			if !isLinkAccessible(href.String()) {
+				logger.InfoCtx(ctx, "Link is inaccessible", logger.Field{Key: "link", Value: href.String()})
+				result.InaccessibleLinks++
+			} else if isExternal(href.String(), baseURL) {
 				result.ExternalLinks++
 			} else {
 				result.InternalLinks++
@@ -145,4 +152,19 @@ func isExternal(link string, base *url.URL) bool {
 		return false // Or handle as an inaccessible link
 	}
 	return linkURL.IsAbs() && linkURL.Hostname() != "" && linkURL.Hostname() != base.Hostname()
+}
+
+func isLinkAccessible(link string) bool {
+	resp, err := http.Head(link)
+	if err != nil {
+		logger.InfoCtx(context.Background(), "Failed to check link accessibility", logger.Field{Key: "link", Value: link})
+		return false
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			logger.ErrorCtx(context.Background(), "Failed to close response body", logger.Field{Key: "error", Value: err})
+		}
+	}(resp.Body)
+	return true
 }
