@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"net/http"
@@ -22,11 +24,14 @@ func NewServer(analysisController *handlers.AnalysisController) *http.Server {
 	router.Use(middleware.LeakBucket())
 	router.Use(gin.Recovery())
 
+	store := persistence.NewInMemoryStore(10 * time.Minute)
+
 	api := router.Group("/api")
 	v1 := api.Group("/v1")
-
-	api2.AddAnalyzerRoutes(v1, analysisController)
-	api2.AddMetricsRoutes(v1)
+	{
+		v1.GET("/analyze/", cache.CachePage(store, 5*time.Minute, analysisController.Analyze))
+		api2.AddMetricsRoutes(v1)
+	}
 
 	server := &http.Server{
 		Addr:         config.Config.Host + ":" + config.Config.Port,
