@@ -1,0 +1,235 @@
+{
+	"info": {
+		"_postman_id": "28647578-e42c-4f12-950b-9a0b80ae044b",
+		"name": "Scraper",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43767728"
+	},
+	"item": [
+		{
+			"name": "Analayer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/api/v1/analyze/?url=https://mrmihi.de",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"analyze",
+						""
+					],
+					"query": [
+						{
+							"key": "url",
+							"value": "https://mrmihi.de"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Analayer",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"URL\": \"https://lucytech.se\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/analyze/?url=https://lucytech.se",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"analyze",
+								""
+							],
+							"query": [
+								{
+									"key": "url",
+									"value": "https://lucytech.se"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 23 Jun 2025 14:48:14 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "217"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"html_version\": \"HTML5\",\n    \"page_title\": \"Lucytech\",\n    \"heading_counts\": {\n        \"h1\": 2,\n        \"h2\": 12,\n        \"h3\": 16,\n        \"h4\": 18,\n        \"h5\": 8,\n        \"h6\": 8\n    },\n    \"internal_link_count\": 12,\n    \"external_link_count\": 8,\n    \"inaccessible_link_count\": 1,\n    \"contains_login_form\": false\n}"
+				},
+				{
+					"name": "Analayer",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/analyze/?url=https://mrmihi.de",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"analyze",
+								""
+							],
+							"query": [
+								{
+									"key": "url",
+									"value": "https://mrmihi.de"
+								}
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "POST, OPTIONS, GET, PUT, DELETE"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 26 Jun 2025 18:43:58 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "75"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Failed to analyze the webpage: failed to connect to the webpage\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Metrics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/system/metrics",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"system",
+						"metrics"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Metrics",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/system/metrics",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"system",
+								"metrics"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "plain",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "POST, OPTIONS, GET, PUT, DELETE"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "gzip"
+						},
+						{
+							"key": "Content-Type",
+							"value": "text/plain; version=0.0.4; charset=utf-8; escaping=values"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 26 Jun 2025 18:41:24 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "1042"
+						}
+					],
+					"cookie": [],
+					"body": "# HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.\n# TYPE go_gc_duration_seconds summary\ngo_gc_duration_seconds{quantile=\"0\"} 0\ngo_gc_duration_seconds{quantile=\"0.25\"} 0\ngo_gc_duration_seconds{quantile=\"0.5\"} 0\ngo_gc_duration_seconds{quantile=\"0.75\"} 0\ngo_gc_duration_seconds{quantile=\"1\"} 0\ngo_gc_duration_seconds_sum 0\ngo_gc_duration_seconds_count 0\n# HELP go_goroutines Number of goroutines that currently exist.\n# TYPE go_goroutines gauge\ngo_goroutines 18\n# HELP go_info Information about the Go environment.\n# TYPE go_info gauge\ngo_info{version=\"go1.24.3\"} 1\n# HELP go_memstats_alloc_bytes Number of bytes allocated and still in use.\n# TYPE go_memstats_alloc_bytes gauge\ngo_memstats_alloc_bytes 813472\n# HELP go_memstats_alloc_bytes_total Total number of bytes allocated, even if freed.\n# TYPE go_memstats_alloc_bytes_total counter\ngo_memstats_alloc_bytes_total 813472\n# HELP go_memstats_buck_hash_sys_bytes Number of bytes used by the profiling bucket hash table.\n# TYPE go_memstats_buck_hash_sys_bytes gauge\ngo_memstats_buck_hash_sys_bytes 4321\n# HELP go_memstats_frees_total Total number of frees.\n# TYPE go_memstats_frees_total counter\ngo_memstats_frees_total 293\n# HELP go_memstats_gc_sys_bytes Number of bytes used for garbage collection system metadata.\n# TYPE go_memstats_gc_sys_bytes gauge\ngo_memstats_gc_sys_bytes 1.484552e+06\n# HELP go_memstats_heap_alloc_bytes Number of heap bytes allocated and still in use.\n# TYPE go_memstats_heap_alloc_bytes gauge\ngo_memstats_heap_alloc_bytes 813472\n# HELP go_memstats_heap_idle_bytes Number of heap bytes waiting to be used.\n# TYPE go_memstats_heap_idle_bytes gauge\ngo_memstats_heap_idle_bytes 4.3008e+06\n# HELP go_memstats_heap_inuse_bytes Number of heap bytes that are in use.\n# TYPE go_memstats_heap_inuse_bytes gauge\ngo_memstats_heap_inuse_bytes 3.432448e+06\n# HELP go_memstats_heap_objects Number of allocated objects.\n# TYPE go_memstats_heap_objects gauge\ngo_memstats_heap_objects 2264\n# HELP go_memstats_heap_released_bytes Number of heap bytes released to OS.\n# TYPE go_memstats_heap_released_bytes gauge\ngo_memstats_heap_released_bytes 4.3008e+06\n# HELP go_memstats_heap_sys_bytes Number of heap bytes obtained from system.\n# TYPE go_memstats_heap_sys_bytes gauge\ngo_memstats_heap_sys_bytes 7.733248e+06\n# HELP go_memstats_last_gc_time_seconds Number of seconds since 1970 of last garbage collection.\n# TYPE go_memstats_last_gc_time_seconds gauge\ngo_memstats_last_gc_time_seconds 0\n# HELP go_memstats_lookups_total Total number of pointer lookups.\n# TYPE go_memstats_lookups_total counter\ngo_memstats_lookups_total 0\n# HELP go_memstats_mallocs_total Total number of mallocs.\n# TYPE go_memstats_mallocs_total counter\ngo_memstats_mallocs_total 2557\n# HELP go_memstats_mcache_inuse_bytes Number of bytes in use by mcache structures.\n# TYPE go_memstats_mcache_inuse_bytes gauge\ngo_memstats_mcache_inuse_bytes 9664\n# HELP go_memstats_mcache_sys_bytes Number of bytes used for mcache structures obtained from system.\n# TYPE go_memstats_mcache_sys_bytes gauge\ngo_memstats_mcache_sys_bytes 15704\n# HELP go_memstats_mspan_inuse_bytes Number of bytes in use by mspan structures.\n# TYPE go_memstats_mspan_inuse_bytes gauge\ngo_memstats_mspan_inuse_bytes 54880\n# HELP go_memstats_mspan_sys_bytes Number of bytes used for mspan structures obtained from system.\n# TYPE go_memstats_mspan_sys_bytes gauge\ngo_memstats_mspan_sys_bytes 65280\n# HELP go_memstats_next_gc_bytes Number of heap bytes when next garbage collection will take place.\n# TYPE go_memstats_next_gc_bytes gauge\ngo_memstats_next_gc_bytes 4.194304e+06\n# HELP go_memstats_other_sys_bytes Number of bytes used for other system allocations.\n# TYPE go_memstats_other_sys_bytes gauge\ngo_memstats_other_sys_bytes 1.140687e+06\n# HELP go_memstats_stack_inuse_bytes Number of bytes in use by the stack allocator.\n# TYPE go_memstats_stack_inuse_bytes gauge\ngo_memstats_stack_inuse_bytes 655360\n# HELP go_memstats_stack_sys_bytes Number of bytes obtained from system for stack allocator.\n# TYPE go_memstats_stack_sys_bytes gauge\ngo_memstats_stack_sys_bytes 655360\n# HELP go_memstats_sys_bytes Number of bytes obtained from system.\n# TYPE go_memstats_sys_bytes gauge\ngo_memstats_sys_bytes 1.1099152e+07\n# HELP go_threads Number of OS threads created.\n# TYPE go_threads gauge\ngo_threads 9\n# HELP promhttp_metric_handler_requests_in_flight Current number of scrapes being served.\n# TYPE promhttp_metric_handler_requests_in_flight gauge\npromhttp_metric_handler_requests_in_flight 1\n# HELP promhttp_metric_handler_requests_total Total number of scrapes by HTTP status code.\n# TYPE promhttp_metric_handler_requests_total counter\npromhttp_metric_handler_requests_total{code=\"200\"} 0\npromhttp_metric_handler_requests_total{code=\"500\"} 0\npromhttp_metric_handler_requests_total{code=\"503\"} 0\n"
+				}
+			]
+		}
+	]
+}
