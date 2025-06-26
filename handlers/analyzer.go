@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"scraper/dto"
 	"scraper/internal/logger"
 	"scraper/services"
 	"time"
@@ -27,27 +26,22 @@ func NewAnalysisController(service *services.WebAnalysisService) *AnalysisContro
 func (ac *AnalysisController) Analyze(c *gin.Context) {
 	ctx := c.Request.Context()
 	logger.InfoCtx(ctx, "Received request to analyze a webpage")
-	var request dto.AnalyzeWebsiteReq
-	if err := c.ShouldBindJSON(&request); err != nil {
-		logger.ErrorCtx(ctx, "Invalid request body", logger.Field{Key: "error", Value: err})
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body. Please provide a valid URL."})
-		return
-	}
 
-	if request.URL == "" {
+	url := c.Query("url")
+	if url == "" {
 		logger.InfoCtx(ctx, "Missing URL in request")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "URL is required"})
 		return
 	}
 
-	logger.InfoCtx(ctx, "Analyzing webpage", logger.Field{Key: "url", Value: request.URL})
+	logger.InfoCtx(ctx, "Analyzing webpage", logger.Field{Key: "url", Value: url})
 
 	analysisCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
 	defer cancel()
 
-	result, err := ac.AnalysisService.AnalyseWebPage(analysisCtx, request.URL)
+	result, err := ac.AnalysisService.AnalyseWebPage(analysisCtx, url)
 	if err != nil {
-		logger.ErrorCtx(ctx, "Analysis failed", logger.Field{Key: "url", Value: request.URL}, logger.Field{Key: "error", Value: err})
+		logger.ErrorCtx(ctx, "Analysis failed", logger.Field{Key: "url", Value: url}, logger.Field{Key: "error", Value: err})
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to analyze the webpage: %v", err)})
 		return
 	}

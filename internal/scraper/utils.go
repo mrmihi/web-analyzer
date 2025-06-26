@@ -10,11 +10,27 @@ type ExtendedPage struct {
 }
 
 func (ep *ExtendedPage) ElementCount(selector string) int {
-	elements, err := ep.Elements(selector)
+	if selector == "h1" || selector == "h2" || selector == "h3" || selector == "h4" || selector == "h5" || selector == "h6" {
+		result, err := ep.Eval(`(selector) => {
+			return document.getElementsByTagName(selector).length;
+		}`, selector)
+
+		if err != nil {
+			return 0
+		}
+
+		return result.Value.Int()
+	}
+
+	result, err := ep.Eval(`(selector) => {
+		return document.querySelectorAll(selector).length;
+	}`, selector)
+
 	if err != nil {
 		return 0
 	}
-	return len(elements)
+
+	return result.Value.Int()
 }
 
 func (ep *ExtendedPage) ContainsLoginForm() bool {
@@ -30,10 +46,4 @@ func (ep *ExtendedPage) HTMLVersion() string {
 		return "HTML5"
 	}
 	return "HTML4 or older"
-}
-
-func RunWithNewPagePool(b *rod.Browser, limit int, fn func(rod.Pool[rod.Page])) {
-	pool := rod.NewPagePool(limit)
-	defer pool.Cleanup(func(p *rod.Page) { p.Close() })
-	fn(pool)
 }
