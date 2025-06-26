@@ -21,7 +21,7 @@ type MockAnalyzer struct {
 
 // New creates a new MockAnalyzer
 func NewMockAnalyzer() (*MockAnalyzer, error) {
-	u := launcher.New().Headless(true).NoSandbox(true).MustLaunch()
+	u := launcher.New().Headless(true).Leakless(false).NoSandbox(true).MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 
 	return &MockAnalyzer{
