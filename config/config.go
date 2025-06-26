@@ -11,7 +11,7 @@ type Cfg struct {
 	Port        string `mapstructure:"PORT"`
 	Host        string `mapstructure:"HOST"`
 	ChromeSetup string `mapstructure:"CHROME_SETUP"`
-	OS          string `mapstructure:"OS"`
+	Leakless    bool   `mapstructure:"LEAKLESS"`
 }
 
 var Config *Cfg
@@ -19,6 +19,7 @@ var Config *Cfg
 func setDefaults() {
 	viper.SetDefault("PORT", "8080")
 	viper.SetDefault("HOST", "0.0.0.0")
+	viper.SetDefault("LEAKLESS", true)
 }
 
 func GetConfig() *Cfg {
@@ -51,4 +52,5 @@ func bindEnvVariables() {
 	_ = viper.BindEnv("PORT")
 	_ = viper.BindEnv("HOST")
 	_ = viper.BindEnv("CHROME_SETUP")
+	_ = viper.BindEnv("LEAKLESS")
 }
