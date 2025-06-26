@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 	"scraper/internal/logger"
@@ -12,6 +11,7 @@ type Cfg struct {
 	Port        string `mapstructure:"PORT"`
 	Host        string `mapstructure:"HOST"`
 	ChromeSetup string `mapstructure:"CHROME_SETUP"`
+	OS          string `mapstructure:"OS"`
 }
 
 var Config *Cfg
