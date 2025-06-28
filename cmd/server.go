@@ -24,21 +24,19 @@ func NewServer(analysisController *handlers.AnalysisController) *http.Server {
 	router.Use(middleware.LeakBucket())
 	router.Use(gin.Recovery())
 
-	store := persistence.NewInMemoryStore(10 * time.Minute)
+	store := persistence.NewInMemoryStore(config.Config.InMemStoreTTL * time.Minute)
 
 	api := router.Group("/api")
 	v1 := api.Group("/v1")
 	{
-		v1.GET("/analyze/", cache.CachePage(store, 5*time.Minute, analysisController.Analyze))
+		v1.GET("/analyze/", cache.CachePage(store, config.Config.InMemStoreTTL*time.Minute, analysisController.Analyze))
 		api2.AddMetricsRoutes(v1)
 	}
 
 	server := &http.Server{
-		Addr:         config.Config.Host + ":" + config.Config.Port,
-		Handler:      router,
-		ReadTimeout:  1 * time.Minute,
-		WriteTimeout: 1 * time.Minute,
-		IdleTimeout:  1 * time.Minute,
+		Addr:    config.Config.Host + ":" + config.Config.Port,
+		Handler: router,
 	}
+
 	return server
 }
