@@ -71,4 +71,5 @@ func bindEnvVariables() {
 	_ = viper.BindEnv("ANALYZER_TYPE")
 	_ = viper.BindEnv("ANALYZE_TIMEOUT")
 	_ = viper.BindEnv("IN_MEM_STORE_TTL")
+	_ = viper.BindEnv("HEADLESS")
 }
