@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"scraper/dto"
-	rodAnalyzer "scraper/internal/scraper"
+	"scraper/internal/scraper/rodAnalyzer"
 	"scraper/services"
 	"testing"
 

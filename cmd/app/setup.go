@@ -12,6 +12,8 @@ import (
 	"scraper/handlers"
 	"scraper/internal/logger"
 	"scraper/internal/scraper"
+	"scraper/internal/scraper/htmlAnalyzer"
+	"scraper/internal/scraper/rodAnalyzer"
 	"scraper/services"
 	"time"
 )
@@ -28,15 +30,29 @@ type App struct {
 
 // New creates and wires up all the application components.
 func New() (*App, func()) {
-
+	ctx := context.Background()
+	var analyzer scraper.PageAnalyzer
+	var err error
 	appLogger := logger.NewZapLogger(true)
 	logger.SetLogger(appLogger)
 
 	appConfig := config.GetConfig()
 
-	analyzer, err := rodAnalyzer.New()
-	if err != nil {
-		log.Fatalf("FATAL: Failed to create rod analyzer: %s\n", err)
+	switch appConfig.AnalyzerType {
+	case "rod":
+		analyzer, err = rodAnalyzer.New()
+		if err != nil {
+			log.Fatalf("FATAL: Failed to create rod analyzer: %s\n", err)
+		}
+		appLogger.InfoCtx(ctx, "Using 'rod' page analyzer.")
+	case "html":
+		analyzer, err = htmlAnalyzer.New()
+		if err != nil {
+			log.Fatalf("FATAL: Failed to create html parser: %s\n", err)
+		}
+		appLogger.InfoCtx(ctx, "Using 'html' page analyzer.")
+	default:
+		log.Fatalf("FATAL: Invalid analyzer type specified: %s\n", appConfig.AnalyzerType)
 	}
 
 	analysisService := services.NewWebAnalysisService(analyzer)

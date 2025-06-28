@@ -15,6 +15,7 @@ type Cfg struct {
 	Host           string        `mapstructure:"HOST"`
 	ChromeSetup    string        `mapstructure:"CHROME_SETUP"`
 	Leakless       bool          `mapstructure:"LEAKLESS"`
+	AnalyzerType   string        `mapstructure:"ANALYZER_TYPE"`
 	AnalyzeTimeOut time.Duration `mapstructure:"ANALYZE_TIMEOUT"`
 	InMemStoreTTL  time.Duration `mapstructure:"IN_MEM_STORE_TTL"`
 	Headless       bool          `mapstructure:"HEADLESS"`
@@ -26,6 +27,7 @@ func setDefaults() {
 	viper.SetDefault("PORT", "8080")
 	viper.SetDefault("HOST", "0.0.0.0")
 	viper.SetDefault("LEAKLESS", true)
+	viper.SetDefault("ANALYZER_TYPE", "rod")
 	viper.SetDefault("ANALYZE_TIMEOUT", 2)
 	viper.SetDefault("IN_MEM_STORE_TTL", 5)
 	viper.SetDefault("HEADLESS", true)
@@ -66,6 +68,7 @@ func bindEnvVariables() {
 	_ = viper.BindEnv("HOST")
 	_ = viper.BindEnv("CHROME_SETUP")
 	_ = viper.BindEnv("LEAKLESS")
+	_ = viper.BindEnv("ANALYZER_TYPE")
 	_ = viper.BindEnv("ANALYZE_TIMEOUT")
 	_ = viper.BindEnv("IN_MEM_STORE_TTL")
 }

@@ -8,11 +8,11 @@ import (
 
 // WebAnalysisService contains the business logic for analyzing a webpage.
 type WebAnalysisService struct {
-	Analyzer rodAnalyzer.PageAnalyzer
+	Analyzer scraper.PageAnalyzer
 }
 
 // NewWebAnalysisService creates a new WebAnalysisService.
-func NewWebAnalysisService(analyzer rodAnalyzer.PageAnalyzer) *WebAnalysisService {
+func NewWebAnalysisService(analyzer scraper.PageAnalyzer) *WebAnalysisService {
 	return &WebAnalysisService{Analyzer: analyzer}
 }
 
