@@ -6,8 +6,6 @@ import (
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/proto"
-	"io"
-	"net/http"
 	"net/url"
 	"scraper/common"
 	"scraper/config"
@@ -19,12 +17,6 @@ import (
 var (
 	ErrConnectionError = errors.New("failed to connect to the webpage")
 )
-
-// PageAnalyzer defines the interface for analyzing web pages.
-type PageAnalyzer interface {
-	Analyze(ctx context.Context, url string) (dto.AnalyzeWebsiteRes, error)
-	Close() error
-}
 
 // RodAnalyzer is the concrete implementation of PageAnalyzer using the rod library.
 type RodAnalyzer struct {
@@ -44,7 +36,7 @@ func New() (*RodAnalyzer, error) {
 		l = launcher.New().Bin(path)
 	}
 
-	u := l.Headless(true).NoSandbox(true).Leakless(false).Set("no-sandbox").Set("disable-gpu").MustLaunch()
+	u := l.Headless(config.Config.Headless).NoSandbox(true).Leakless(config.Config.Leakless).Set("no-sandbox").Set("disable-gpu").MustLaunch()
 	browser := rod.New().ControlURL(u).MustConnect()
 
 	router := browser.HijackRequests()
@@ -143,28 +135,4 @@ func (r *RodAnalyzer) Analyze(ctx context.Context, targetUrl string) (dto.Analyz
 // Close cleans up the browser instance.
 func (r *RodAnalyzer) Close() error {
 	return r.Browser.Close()
-}
-
-// isExternal is a helper function to check if a link is external.
-func isExternal(link string, base *url.URL) bool {
-	linkURL, err := url.Parse(link)
-	if err != nil {
-		return false // Or handle as an inaccessible link
-	}
-	return linkURL.IsAbs() && linkURL.Hostname() != "" && linkURL.Hostname() != base.Hostname()
-}
-
-func isLinkAccessible(link string) bool {
-	resp, err := http.Head(link)
-	if err != nil {
-		logger.InfoCtx(context.Background(), "Failed to check link accessibility", logger.Field{Key: "link", Value: link})
-		return false
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			logger.ErrorCtx(context.Background(), "Failed to close response body", logger.Field{Key: "error", Value: err})
-		}
-	}(resp.Body)
-	return true
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"scraper/config"
 	"scraper/internal/logger"
 	"scraper/services"
 	"time"
@@ -36,13 +37,13 @@ func (ac *AnalysisController) Analyze(c *gin.Context) {
 
 	logger.InfoCtx(ctx, "Analyzing webpage", logger.Field{Key: "url", Value: url})
 
-	analysisCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
+	analysisCtx, cancel := context.WithTimeout(ctx, config.Config.AnalyzeTimeOut*time.Minute)
 	defer cancel()
 
 	result, err := ac.AnalysisService.AnalyseWebPage(analysisCtx, url)
 	if err != nil {
 		logger.ErrorCtx(ctx, "Analysis failed", logger.Field{Key: "url", Value: url}, logger.Field{Key: "error", Value: err})
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to analyze the webpage: %v", err)})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to analyze the webpage, URL might be invalid!")})
 		return
 	}
 	c.JSON(http.StatusOK, result)
