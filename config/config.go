@@ -26,7 +26,7 @@ var Config *Cfg
 func setDefaults() {
 	viper.SetDefault("PORT", "8080")
 	viper.SetDefault("HOST", "0.0.0.0")
-	viper.SetDefault("LEAKLESS", true)
+	viper.SetDefault("LEAKLESS", false)
 	viper.SetDefault("ANALYZER_TYPE", "rod")
 	viper.SetDefault("ANALYZE_TIMEOUT", 2)
 	viper.SetDefault("IN_MEM_STORE_TTL", 5)
