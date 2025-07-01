@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-// TODO: Make errors of my own and use standards
-
 type GinError struct {
 	Code    int
 	Message string
