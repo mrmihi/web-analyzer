@@ -33,7 +33,7 @@ func TestAnalyzerHandler(t *testing.T) {
 
 		Convey("When sending a valid request", func() {
 			url := "https://example.com"
-			req, err := http.NewRequest("GET", "/analyze/?url="+url, nil)
+			req, err := http.NewRequest("GET", "/analyze?url="+url, nil)
 			So(err, ShouldBeNil)
 
 			resp := httptest.NewRecorder()
@@ -65,7 +65,7 @@ func TestAnalyzerHandler(t *testing.T) {
 		})
 
 		Convey("When sending a request with an empty URL", func() {
-			req, err := http.NewRequest("GET", "/analyze/", nil)
+			req, err := http.NewRequest("GET", "/analyze", nil)
 			So(err, ShouldBeNil)
 
 			resp := httptest.NewRecorder()
@@ -87,7 +87,7 @@ func TestAnalyzerHandler(t *testing.T) {
 		Convey("When sending a request with an invalid URL format", func() {
 			invalidURL := "invalid-url-format"
 
-			req, err := http.NewRequest("GET", "/analyze/?url="+invalidURL, nil)
+			req, err := http.NewRequest("GET", "/analyze?url="+invalidURL, nil)
 			So(err, ShouldBeNil)
 
 			resp := httptest.NewRecorder()

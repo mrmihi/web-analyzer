@@ -12,3 +12,5 @@ teardown-linux:
 	docker compose -f ./infra/linux/docker-compose.yml down
 teardown-windows:
 	docker compose -f ./infra/windows/docker-compose.yml down
+test:
+	go test ./tests/...
