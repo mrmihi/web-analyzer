@@ -14,10 +14,6 @@ import (
 	"sync"
 )
 
-var (
-	ErrConnectionError = errors.New("failed to connect to the webpage")
-)
-
 // RodAnalyzer is the concrete implementation of PageAnalyzer using the rod library.
 type RodAnalyzer struct {
 	Browser *rod.Browser
@@ -77,14 +73,14 @@ func (r *RodAnalyzer) Analyze(ctx context.Context, targetUrl string) (dto.Analyz
 	wait := page.WaitEvent(&e)
 	if err := page.Navigate(targetUrl); err != nil {
 		logger.ErrorCtx(ctx, "Failed to retrieve webpage", logger.Field{Key: "error", Value: err})
-		return result, ErrConnectionError
+		return result, common.NewGinError(common.RequestFail, err.Error(), nil)
 	}
 	wait()
 	page.MustWaitLoad()
 
 	if e.Response.Status < 200 || e.Response.Status >= 300 {
 		logger.ErrorCtx(ctx, "Invalid response status", logger.Field{Key: "status", Value: e.Response.Status})
-		return result, common.NewGinError(422, "Failed to analyze webpage", e.Response.Status)
+		return result, common.NewGinError(common.RequestFail, "Webpage sent invalid response status", e.Response.Status)
 	}
 
 	extendedPage := &ExtendedPage{page}
@@ -102,13 +98,13 @@ func (r *RodAnalyzer) Analyze(ctx context.Context, targetUrl string) (dto.Analyz
 	baseURL, err := url.Parse(extendedPage.MustInfo().URL)
 	if err != nil {
 		logger.WarnCtx(ctx, "Could not parse base URL", logger.Field{Key: "error", Value: err})
-		return result, err
+		return result, common.NewGinError(common.RequestFail, err.Error(), nil)
 	}
 
 	allLinkElements, err := extendedPage.Elements(`a[href]:not([href^="mailto:"]):not([href^="tel:"])`)
 	if err != nil {
 		logger.WarnCtx(ctx, "Could not get link elements", logger.Field{Key: "error", Value: err})
-		return result, err
+		return result, common.NewGinError(common.RequestFail, err.Error(), e.Response.Status)
 	}
 
 	var wg sync.WaitGroup

@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"scraper/common"
 	"scraper/config"
 	"scraper/internal/logger"
 	"scraper/services"
@@ -26,12 +26,13 @@ func NewAnalysisController(service *services.WebAnalysisService) *AnalysisContro
 
 func (ac *AnalysisController) Analyze(c *gin.Context) {
 	ctx := c.Request.Context()
-	logger.InfoCtx(ctx, "Received request to analyze a webpage")
+	logger.InfoCtx(ctx, "Received a request to analyze a webpage")
 
 	url := c.Query("url")
 	if url == "" {
-		logger.InfoCtx(ctx, "Missing URL in request")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "URL is required"})
+		logger.InfoCtx(ctx, "Missing URL in the request")
+		urlError := common.NewGinError(common.RequestFail, "URL is required", nil)
+		c.JSON(http.StatusBadRequest, urlError)
 		return
 	}
 
@@ -43,7 +44,7 @@ func (ac *AnalysisController) Analyze(c *gin.Context) {
 	result, err := ac.AnalysisService.AnalyseWebPage(analysisCtx, url)
 	if err != nil {
 		logger.ErrorCtx(ctx, "Analysis failed", logger.Field{Key: "url", Value: url}, logger.Field{Key: "error", Value: err})
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to analyze the webpage, URL might be invalid!")})
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, result)
